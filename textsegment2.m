@@ -8,8 +8,8 @@ clear;
 % img = 'Document_3Handprint.jpg';
 % img = 'Document_Mansion.jpg';
 % img = 'Document_Mansion2.jpg';
-img = 'Document_Mugshot.jpg';
-% img = 'Document_Mugshot2.jpg';
+% img = 'Document_Mugshot.jpg';
+img = 'Document_Mugshot2.jpg';
 % img = 'Document_TomHorn.jpg';
 % img = 'Document_voynich_pg-39-40.jpg';
 % img = 'Document_Will.jpg';
@@ -64,7 +64,6 @@ figure, imshow(im), title('HOUGHLINES'), hold on
 max_len = 0;
 for k = 1:length(lines)
    	xy = [lines(k).point1; lines(k).point2];
-   	xy
    	plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','blue');
 
   	% Plot beginnings and ends of lines
@@ -151,8 +150,11 @@ mx = max(L(:));
 % width of box to be drawn
 box_width = 2;
 
-component_length_thresh = 0.25 * im_width;
-component_height_thresh = 0.25 * im_height;
+component_max_length = 0.25 * im_width;
+component_max_height = 0.25 * im_height;
+
+component_min_length = 5;
+component_min_height = 8;
 
 for ic = 1:mx
 	[r,c] = find(L==ic);
@@ -162,7 +164,15 @@ for ic = 1:mx
 	maxc = max(c);
 
 	%% COMPONENT REJECTION MODULE
-	% discard non-textual objects
+	%% discard non-textual objects
+	if (maxc - minc) < component_min_length
+		continue
+	end
+ 
+	if (maxr - minr) < component_min_height
+		continue
+	end
+
 	% if (maxc - minc) > maxlength
 	% 	continue
 	% end
