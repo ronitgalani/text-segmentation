@@ -42,44 +42,59 @@ im_edge = edge(im_thresh,'canny');
 % figure, imshow(im_edge), title('edges');
 %%
 
+% im_edge2(:,:,1) = im2double(im_edge);
+% im_edge2(:,:,2) = im2double(im_edge);
+% im_edge2(:,:,3) = im2double(im_edge);
 
-%% HOUGH LINE DETECTION MODULE
-% [H,T,R] = hough(im_edge);
-% % figure, imshow(H,[],'XData',T,'YData',R,'InitialMagnification','fit');
-% % xlabel('\theta'), ylabel('\rho');
-% % axis on, axis normal, hold on;
-% P  = houghpeaks(H, 500, 'Threshold', ceil(0.1*max(H(:))), 'NHoodSize', [1 1]);
-% % P  = houghpeaks(H);
-% x = T(P(:,2)); y = R(P(:,1));
-% % plot(x,y,'s','color','white'), title('hough');
+im_edge2 = im_edge;
 
-% % Find lines and plot them
-% lines = houghlines(im_edge,T,R,P,'FillGap',2,'MinLength',30);
-% figure, imshow(im), title('HOUGHLINES'), hold on
-% max_len = 0;
-% for k = 1:length(lines)
-%    	xy = [lines(k).point1; lines(k).point2];
-%    	xy
-%    	plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','blue');
+% HOUGH LINE DETECTION MODULE
+[H,T,R] = hough(im_edge);
+% figure, imshow(H,[],'XData',T,'YData',R,'InitialMagnification','fit');
+% xlabel('\theta'), ylabel('\rho');
+% axis on, axis normal, hold on;
+P  = houghpeaks(H, 500, 'Threshold', ceil(0.1*max(H(:))), 'NHoodSize', [1 1]);
+% P  = houghpeaks(H);
+x = T(P(:,2)); y = R(P(:,1));
+% plot(x,y,'s','color','white'), title('hough');
 
-%   	% Plot beginnings and ends of lines
-%    	plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
-%    	plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
+% Find lines and plot them
+lines = houghlines(im_edge,T,R,P,'FillGap',2,'MinLength',30);
+figure, imshow(im), title('HOUGHLINES'), hold on
+max_len = 0;
+for k = 1:length(lines)
+   	xy = [lines(k).point1; lines(k).point2];
+   	xy
+   	plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','blue');
 
-%    	im_edge(xy(1,1):xy(2,1), xy(1,2):xy(2,2)) = 0;
+  	% Plot beginnings and ends of lines
+   	plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');
+   	plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');
 
-%    	% Determine the endpoints of the longest line segment
-%    	len = norm(lines(k).point1 - lines(k).point2);
-%    	if ( len > max_len)
-%     	max_len = len;
-%       	xy_long = xy;
-%    	end
-% end
+   	% im_edge2(xy(1,2):xy(2,2), xy(1,1):xy(2,1), 1) = 0;
+   	% im_edge2(xy(1,2):xy(2,2), xy(1,1):xy(2,1), 2) = 0;
+   	% im_edge2(xy(1,2):xy(2,2), xy(1,1):xy(2,1), 3) = 1;
 
-% % highlight the longest line segment
-% plot(xy_long(:,1),xy_long(:,2),'LineWidth',2,'Color','green');
-%%
+   	im_edge2(xy(1,2):xy(2,2), xy(1,1):xy(2,1)) = 0;
 
+   	% Determine the endpoints of the longest line segment
+   	len = norm(lines(k).point1 - lines(k).point2);
+   	if ( len > max_len)
+    	max_len = len;
+      	xy_long = xy;
+   	end
+end
+
+% highlight the longest line segment
+plot(xy_long(:,1),xy_long(:,2),'LineWidth',2,'Color','green');
+%
+
+figure,
+subplot(1,2,1), imshow(im_edge)
+subplot(1,2,2), imshow(im_edge2, [])
+
+
+im_edge = im_edge2;
 
 %% IMAGE DILATION
 se = strel('square',2);
@@ -96,15 +111,22 @@ im_filled = imfill(im_dilated, 'holes');
 %%
 
 %% DISPLAY INTERMEDIATE STEPS
-figure, 
-subplot(2,3,1), imshow(im),         title('1. Original Image'),
-subplot(2,3,2), imshow(im_medfilt), title('2. Median Filter')
-subplot(2,3,3), imshow(im_thresh),  title('3. Thresholding')
-subplot(2,3,4), imshow(im_edge),    title('4. Detected edges')
-subplot(2,3,5), imshow(im_dilated), title('5. Dilated')
-subplot(2,3,6), imshow(im_filled),  title('6. Filled')
+% figure, 
+% subplot(2,3,1), imshow(im),         title('1. Original Image'),
+% subplot(2,3,2), imshow(im_medfilt), title('2. Median Filter')
+% subplot(2,3,3), imshow(im_thresh),  title('3. Thresholding')
+% subplot(2,3,4), imshow(im_edge),    title('4. Detected edges')
+% subplot(2,3,5), imshow(im_dilated), title('5. Dilated')
+% subplot(2,3,6), imshow(im_filled),  title('6. Filled')
 %%
 
+%% DISPLAY INTERMEDIATE STEPS
+figure, 
+subplot(2,2,1), imshow(im),         title('1. Original Image'),
+subplot(2,2,2), imshow(im_edge),    title('4. Detected edges')
+subplot(2,2,3), imshow(im_dilated), title('5. Dilated')
+subplot(2,2,4), imshow(im_filled),  title('6. Filled')
+%%
 
 %% GET CONNECTED COMPONENTS
 [im_components no_components] = bwlabel(im_filled);
